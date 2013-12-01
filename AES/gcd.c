@@ -60,56 +60,37 @@ modulus(int32_t a[EQN_LEN], uint32_t modulus)
     }
 }
 
+/*
+ * Subtracts b from a and  stores the result back into a.
+ * Overwrites a
+ */
 static void
 subtract_polynomials
 ( int32_t a[EQN_LEN], int32_t b[EQN_LEN] )
 {
     for(int i = 0; i < EQN_LEN; i++)
     {
-        
+        a[i] = a[i] - b[i];    
     }
 }
 
 /*
- * Return codes:
- * -1 --> a is all zeroes
- * -2 --> b is all zeroes
- * -3 --> a and b are equal
+ *  Return codes:
+ *  0 --> Arrays are equal
+ *  1 --> a is higher field
+ *  2 --> b is higher field
+ *  3 --> Error error error
+ *  Anything larger is undefined behavior
  */
-static int
-gcd_helper
+int32_t
+gcd_find_larger_field
 ( int32_t a[EQN_LEN], int32_t b[EQN_LEN] )
 {
     int a_start = 31;
-    int b_start = 21;
-    int shift = 0;
-    
-    while (a[a_start] != 0 && a_start > -1 ) {a_start--;}
-    while (b[b_start] != 0 && b_start > -1 ) {b_start--;}
+    int b_start = 31;
 
-    if(a_start < 0)
-        return -1;
-    if(b_start < 0)
-        return -2;
-
-    if(a_start > b_start)
-    {
-        shift = a_start - b_start;
-    }
-    else if(a_start < b_start)
-    {
-        shift = b_start - a_start;
-    }
-    else
-    {
-        int a_next = a_start - 1;
-        int b_next = b_start - 1;
-        while(a[a_next] != 0 && a_next > -1) {a_next--;}
-        while(b[b_next] != 0 && b_next > -1) {b_next--;}
-
-        if(
-    }
-    
+    while (a[a_start] == 0 && a_start > -1) {a_start--;}
+    while (b[b_start] == 0 && a_start > -1) {b_start--;}
 }
 
 /*
@@ -124,10 +105,10 @@ gcd_extended_polynomial
     int32_t* denominator;
     
     int i = 31;
-    while( a[i] != 0 && b[i] != 0 && i > -1){ i--; } 
+    while( a[i] == 0 && b[i] == 0 && i > -1){ i--; } 
 
     if( i < 0)
-        i = 0;
+        return 0;
 
     if(a[i] != 0 && b[i] == 0)
     {
@@ -157,6 +138,7 @@ gcd_extended_polynomial
         }
     }
 
+    int larger = gcd_find_larger_field(a,b);
     //Actual gcd calculation
 
 }

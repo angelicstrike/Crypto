@@ -10,7 +10,10 @@ bool
 AES_Subbytes
 ( uint8_t input[TEXT_MATRIX_SIZE][TEXT_MATRIX_SIZE] )
 {
-    
+    for(int i = 0; i < TEXT_MATRIX_SIZE; i++)
+    {
+        
+    } 
     return true;
 }
 

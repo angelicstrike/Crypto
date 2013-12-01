@@ -12,10 +12,11 @@
 #define EQN_LEN 32
 #define FIELD_POLY 0x11B //0x100011011
 
-void gcd_find_inverse(int32_t inverse[EQN_LEN], int a[EQN_LEN], int b[EQN_LEN]);
+void gcd_find_inverse(int32_t inverse[EQN_LEN], int a[EQN_LEN], int b[EQN_LEN], int modulus);
 uint32_t gcd_extended_polynomial(int32_t a[EQN_LEN], int32_t  b[EQN_LEN], uint32_t modulus);
 void gcd_byte_to_field(uint32_t byte, int32_t a[EQN_LEN]);
 uint32_t gcd_field_to_byte(int32_t a[EQN_LEN]);
+int32_t gcd_find_larger_field(int32_t a[EQN_LEN], int32_t b[EQN_LEN]);
 
 bool AES_Subbytes(uint8_t input[TEXT_MATRIX_SIZE][TEXT_MATRIX_SIZE]);
 bool AES_ShiftRows(uint8_t input[TEXT_MATRIX_SIZE][TEXT_MATRIX_SIZE]);
