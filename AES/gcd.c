@@ -1,6 +1,4 @@
 #include "aes.h"
-#include <stdlib.h>
-
 
 /*
  * Only works in modulo 2
@@ -9,6 +7,11 @@ void
 gcd_byte_to_field
 ( uint32_t byte, int32_t a[EQN_LEN] )
 {
+    for(int i = 0; i < EQN_LEN; i++)
+    {
+        a[i] = 0x0;
+    }
+
     for(int i = 0; i < EQN_LEN; i++)
     {
         a[i] = ( byte & (1 << i) ) >> i;
@@ -34,7 +37,7 @@ gcd_field_to_byte
     return ret_val;
 }
 
-static void
+void
 shift_up
 (int32_t a[EQN_LEN], int32_t shift)
 {
@@ -45,14 +48,14 @@ shift_up
         a[i] = 0;
     }
 
-    for(int i = EQN_LEN - 1; i-shift_up >= 0; i--)
+    for(int i = EQN_LEN - 1; i-shift >= 0; i--)
     {
-        a[i] = b[i-shift_up];
+        a[i] = b[i-shift];
     } 
 }
 
 static void
-modulus(int32_t a[EQN_LEN], uint32_t modulus)
+gcd_modulus(int32_t a[EQN_LEN], uint32_t modulus)
 {
     for(int i = 0; i < EQN_LEN; i++)
     {
@@ -91,54 +94,100 @@ gcd_find_larger_field
 
     while (a[a_start] == 0 && a_start > -1) {a_start--;}
     while (b[b_start] == 0 && a_start > -1) {b_start--;}
+
+    return 3;
+}
+
+/*
+ *  All shifts are relative to a, so
+ *  <0 --> a must be shifted to match b
+ *  0  --> no shift must occur
+ *  >0 --> b must be shifted to match a
+ */
+int32_t 
+gcd_find_shift
+( int32_t a[EQN_LEN], int32_t b[EQN_LEN] )
+{
+    int a_start = 31;
+    int b_start = 31;
+    while( a[a_start] == 0 && a_start > -1) {a_start--;}
+    while( b[b_start] == 0 && b_start > -1) {b_start--;}
+    
+    if(a_start < 0 || b_start < 0)
+        return 0;
+    else
+        return (a_start - b_start);
+}
+
+double
+gcd_find_mult
+( int32_t a[EQN_LEN], int32_t b[EQN_LEN] )
+{
+    int a_start = 31;
+    int b_start = 31;
+
+    while( a[a_start] == 0 && a_start > -1) {a_start--;}
+    while( b[b_start] == 0 && b_start > -1) {b_start--;}
+    
+    
+    return 0.0;
+}
+
+
+static bool
+gcd_done
+( int32_t a[EQN_LEN] )
+{
+    for(int i = 0; i < EQN_LEN-1; i++)
+    {
+        if ( a[i] != 0 )
+            return false;
+    }
+    if(a[EQN_LEN-1] == 0 || a[EQN_LEN-1] == 1)
+        return true;
+    else
+        return false;
 }
 
 /*
  * Find the greatest common denominator of the polynomial
  * equations a and b, all under the modulus p
+ *
  */
 uint32_t
 gcd_extended_polynomial
-( int32_t a[EQN_LEN], int32_t b[EQN_LEN], uint32_t modulus )
+( int32_t a[EQN_LEN], int32_t b[EQN_LEN], uint32_t p )
 {
-    int32_t* numerator;
-    int32_t* denominator;
-    
-    int i = 31;
-    while( a[i] == 0 && b[i] == 0 && i > -1){ i--; } 
-
-    if( i < 0)
-        return 0;
-
-    if(a[i] != 0 && b[i] == 0)
-    {
-        numerator = a;
-        denominator = b;
-    }
-    else if(a[i] == 0 && b[i] != 0)
-    {
-        numerator = b;
-        denominator = a;
-    }
-    else if(a[i] == 0 && b[i] == 0)
-    {
-        return 0;
-    }
-    else /* Both are non zero*/
-    {
-        if(a[i] > b[i])
-        {
-            numerator = a;
-            denominator = b;
-        }
-        else
-        {
-            numerator = b;
-            denominator = a;
-        }
-    }
-
-    int larger = gcd_find_larger_field(a,b);
+    int counter = 0;
+    int32_t shifts[EQN_LEN];
+    //int32_t mults[EQN_LEN];
     //Actual gcd calculation
-
+    int larger = 0;
+    while( !gcd_done(a) && !gcd_done(b) )
+    {
+        larger = gcd_find_larger_field(a,b);
+        if(larger == 0) //equal
+        {
+            shifts[counter] = 0;
+            subtract_polynomials(a,b);
+        }
+        else if(larger == 1) // a is larger
+        {
+            shifts[counter] = gcd_find_shift(a,b);
+            subtract_polynomials(a,b);
+        }
+        else if(larger == 2) // b is larger
+        {
+            subtract_polynomials(b,a); 
+        }
+        else //Error
+        {
+            printf("An error occurred while encrypting\n");
+            exit(-1);
+        }
+        gcd_modulus(a, p);
+        gcd_modulus(b, p);
+        counter++;
+    }
+    return 0;
 }

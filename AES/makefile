@@ -6,7 +6,7 @@ EXE_GCD=test_gcd.c
 CFLAGS=-Wall -Werror -pedantic -std=c99
 
 aes:
-	$(CC) $(CFLAGS) -o aes $(EXE_AES) $(AES)
+	$(CC) $(CFLAGS)  -o aes $(EXE_AES) $(GCD) $(AES) 
 
 gcd:
 	$(CC) $(CFLAGS) -o gcd $(EXE_GCD) $(GCD)

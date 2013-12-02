@@ -1,8 +1,10 @@
-#ifndef AES_H
-#define AES_H
-
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#ifndef AES_H
+#define AES_H
 
 #define NUM_ROUNDS 10
 #define TEXT_MATRIX_SIZE 4
@@ -10,7 +12,8 @@
 #define NUM_KEYS 44
 
 #define EQN_LEN 32
-#define FIELD_POLY 0x11B //0x100011011
+#define FIELD_BYTE 0x11B //0x100011011
+#define C_BYTE 0x63
 
 void gcd_find_inverse(int32_t inverse[EQN_LEN], int a[EQN_LEN], int b[EQN_LEN], int modulus);
 uint32_t gcd_extended_polynomial(int32_t a[EQN_LEN], int32_t  b[EQN_LEN], uint32_t modulus);
