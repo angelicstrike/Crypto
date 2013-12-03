@@ -41,7 +41,7 @@ gcd_compute
         lower = a;
     }
 
-    while( higher >1 && lower > 1 )
+    while( higher > 1 && lower > 1 )
     {
         while( higher > lower  )
         {
@@ -56,14 +56,17 @@ gcd_compute
 
     uint32_t prev = 0;
     uint32_t cur = 1;
+    uint32_t ans = 0;
     counter--;
     while(counter > -1)
     {
-        printf("prev %x and cur %x and shift %x\n", prev, cur, shifts[counter]);
-        cur *= shifts[counter];
-        cur ^= prev;
-        counter--;
+        ans = cur * shifts[counter];
+        ans ^= prev;
+
         prev = cur;
+        cur = ans;
+        ans = 0;
+        counter--;
     }
 
     return cur;

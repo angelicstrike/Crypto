@@ -5,7 +5,7 @@
 int 
 main()
 {
-    uint32_t x_inv = gcd_compute(0x13, 0x2142);
+    uint32_t x_inv = gcd_compute(0x11, FIELD_BYTE);
 
     printf("inverse is %x\n", x_inv);
     return 0;

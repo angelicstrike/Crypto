@@ -17,23 +17,32 @@ get_bit
     uint8_t ret_val = 0;
     return ret_val;
 }
+static void
+print_matrix
+( uint8_t a[TEXT_MATRIX_SIZE][TEXT_MATRIX_SIZE]  )
+{
+        for(int i = 0; i < TEXT_MATRIX_SIZE; i++)
+        {
+            for(int j = 0; j < TEXT_MATRIX_SIZE; j++)
+            {
+                printf("%x ", a[j][i]);
+            }   
+                                                        
+            printf("\n");
+        }
 
+        printf("\n\n");
+
+}
 static uint8_t
 sbox_calc
 ( uint8_t byte )
 {
-    int32_t a[EQN_LEN];
-    int32_t field_eqn[EQN_LEN];
-    int32_t inverse[EQN_LEN];
-    uint8_t sub_byte;
+    uint32_t inverse;
 
-    gcd_byte_to_field(byte, a);
-    gcd_byte_to_field(FIELD_BYTE, field_eqn);
+    inverse = gcd_compute(byte, FIELD_BYTE);
 
-    gcd_find_inverse(inverse, a, field_eqn, 2);
-    sub_byte = gcd_field_to_byte(inverse);
-
-    return sub_byte;
+    return inverse;
 }
 
 /*
@@ -44,9 +53,17 @@ bool
 AES_Subbytes
 ( uint8_t input[TEXT_MATRIX_SIZE][TEXT_MATRIX_SIZE] )
 {
-    int32_t a[EQN_LEN];
-    int32_t field_eqn[EQN_LEN];
-    gcd_byte_to_field(FIELD_BYTE, field_eqn);
+    uint8_t affine_matrix[8][8] =
+    {
+        {1,0,0,0,1,1,1,1},
+        {1,1,0,0,0,1,1,1},
+        {1,1,1,0,0,0,1,1},
+        {1,1,1,1,0,0,0,1},
+        {1,1,1,1,1,0,0,0},
+        {0,1,1,1,1,1,0,0},
+        {0,0,1,1,1,1,1,0},
+        {0,0,0,1,1,1,1,1}
+    };
     for(int i = 0; i < TEXT_MATRIX_SIZE; i++)
     {
         for(int j = 0; j < TEXT_MATRIX_SIZE; j++)
@@ -55,14 +72,23 @@ AES_Subbytes
         }
     } 
 
-    for(int i = 0; i < TEXT_MATRIX_SIZE; i++)
+    //Column in the input matrix
+    for(int col = 0; col < TEXT_MATRIX_SIZE; col++)
     {
-        for(int j = 0; j < TEXT_MATRIX_SIZE; j++)
+        //for every element in the input matrix
+        for(int elem = 0; elem < TEXT_MATRIX_SIZE; elem++)
         {
-            for(int k = 0; k < 8; k++)
+            //Row in the affine_matrix
+            uint8_t temp = 0;
+            for(int row = 0; row < 8; row++)
             {
-                //short byte = (input[i][j] & (1 << k)) >> k;
-            }            
+                for(int aff_col = 7; aff_col > -1; aff_col--)
+                {
+                    temp ^= (affine_matrix[row][aff_col] & ( (input[col][elem] & (0x01 << aff_col)) >> aff_col) ) << (row);
+                }
+            }
+            temp ^= 0x63;
+            input[col][elem] = temp;
         }
     }
 
@@ -160,7 +186,7 @@ AES_AddRoundKey
     {
         for(int j = 0; j < TEXT_MATRIX_SIZE; j++)
         {
-            input ^= keys[4*round + i][j];
+            input[i][j] ^= keys[4*round + i][j];
         }
     }
 
@@ -168,8 +194,16 @@ AES_AddRoundKey
 }
 
 bool
-AES_ExpandKeys(uint8_t* mainKey, uint32_t roundKeys[NUM_KEYS][TEXT_MATRIX_SIZE])
+AES_ExpandKeys(uint8_t* mainKey, uint8_t roundKeys[NUM_KEYS][TEXT_MATRIX_SIZE])
 {
+    for(int i = 0; i < TEXT_MATRIX_SIZE; i++)
+    {
+        for(int j = 0; j < TEXT_MATRIX_SIZE; j++)
+        {
+            roundKeys[i][j] = mainKey[4*i + j];
+        }
+    }
+
     for(int i = 4; i <= 43; i++)
     {
         if(i % 4 == 0)
@@ -212,6 +246,11 @@ construct_state_matrix
     }
 }
 
+
+
+
+
+
 /*
  * Main, top level encryption algorithm. Implements
  * the AES logic as per FIPS Document 197.
@@ -225,15 +264,19 @@ AES_Encrypt
 
     construct_state_matrix(plaintext, state_matrix);
 
-    AES_ExpandKeys();
+    AES_ExpandKeys(key, roundKeys);
+        print_matrix(state_matrix);
     AES_AddRoundKey(state_matrix, roundKeys, 0);
 
     int i;
     for(i = 1; i < NUM_ROUNDS - 1; i++)
     {
         AES_Subbytes(state_matrix);
+        print_matrix(state_matrix);
         AES_ShiftRows(state_matrix);
+        print_matrix(state_matrix);
         AES_MixColumns(state_matrix);
+        print_matrix(state_matrix);
         AES_AddRoundKey(state_matrix, roundKeys, i);
     }
     
@@ -241,6 +284,14 @@ AES_Encrypt
     AES_Subbytes(state_matrix);
     AES_ShiftRows(state_matrix);
     AES_AddRoundKey(state_matrix, roundKeys, NUM_ROUNDS - 1);
+
+    for(int i = 0; i < TEXT_MATRIX_SIZE; i++)
+    {
+        for(int j = 0; j < TEXT_MATRIX_SIZE; j++)
+        {
+            plaintext[4*i + j] = state_matrix[i][j];
+        }
+    }
 
     return true;
 }

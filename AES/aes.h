@@ -27,7 +27,7 @@ bool AES_SubWord(uint8_t word[TEXT_MATRIX_SIZE]);
 bool AES_ShiftRows(uint8_t input[TEXT_MATRIX_SIZE][TEXT_MATRIX_SIZE]);
 bool AES_MixColumns(uint8_t input[TEXT_MATRIX_SIZE][TEXT_MATRIX_SIZE]);
 bool AES_AddRoundKey(uint8_t input[TEXT_MATRIX_SIZE][TEXT_MATRIX_SIZE], uint8_t keys[NUM_KEYS][TEXT_MATRIX_SIZE], uint32_t round);
-bool AES_ExpandKeys(uint8_t* mainKey, uint32_t roundKeys[NUM_KEYS][TEXT_MATRIX_SIZE]);
+bool AES_ExpandKeys(uint8_t* mainKey, uint8_t roundKeys[NUM_KEYS][TEXT_MATRIX_SIZE]);
 
 /*
  * For the gcd, a[0] is the constant value, and a[EQN_LEN] is the coefficient of the highest value
