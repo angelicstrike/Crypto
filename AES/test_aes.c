@@ -28,12 +28,10 @@ main
         {0x1e, 0x27, 0x98, 0xe5}
     };
 
-    print_matrix(test_matrix);
-    puts("\n");
+    uint8_t roundKeys[NUM_KEYS][TEXT_MATRIX_SIZE];
+    uint8_t mainKey[] = {0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6, 0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c};
 
-    //AES_ShiftRows(test_matrix);
-    AES_MixColumns(test_matrix);
-    print_matrix(test_matrix);
+    AES_ExpandKeys(mainKey, roundKeys);
 
     return 0;
 }

@@ -17,6 +17,25 @@ get_bit
     uint8_t ret_val = 0;
     return ret_val;
 }
+
+static uint8_t
+sbox_calc
+( uint8_t byte )
+{
+    int32_t a[EQN_LEN];
+    int32_t field_eqn[EQN_LEN];
+    int32_t inverse[EQN_LEN];
+    uint8_t sub_byte;
+
+    gcd_byte_to_field(byte, a);
+    gcd_byte_to_field(FIELD_BYTE, field_eqn);
+
+    gcd_find_inverse(inverse, a, field_eqn, 2);
+    sub_byte = gcd_field_to_byte(inverse);
+
+    return sub_byte;
+}
+
 /*
  * Makes call to GCD functions here to do conversion to field
  * equation from bits and back again.
@@ -32,8 +51,7 @@ AES_Subbytes
     {
         for(int j = 0; j < TEXT_MATRIX_SIZE; j++)
         {
-            gcd_byte_to_field(input[i][j], a);
-            //gcd_find_inverse();
+           input[i][j] = sbox_calc(input[i][j]); 
         }
     } 
 
@@ -140,7 +158,10 @@ AES_AddRoundKey
 {
     for(int i = 0; i < TEXT_MATRIX_SIZE; i++)
     {
-
+        for(int j = 0; j < TEXT_MATRIX_SIZE; j++)
+        {
+            input ^= keys[4*round + i][j];
+        }
     }
 
     return true;
@@ -152,15 +173,21 @@ AES_ExpandKeys(uint8_t* mainKey, uint32_t roundKeys[NUM_KEYS][TEXT_MATRIX_SIZE])
     for(int i = 4; i <= 43; i++)
     {
         if(i % 4 == 0)
-        {/*
-            roundKeys[i][0] = ;
-            roundKeys[i][1] = ;
-            roundKeys[i][2] = ;
-            roundKeys[i][3] = ;
-            */
+        {
+            roundKeys[i][0] = roundKeys[i-4][0] ^ sbox_calc(roundKeys[i-1][1]);
+            roundKeys[i][1] = roundKeys[i-4][1] ^ sbox_calc(roundKeys[i-1][2]);
+            roundKeys[i][2] = roundKeys[i-4][2] ^ sbox_calc(roundKeys[i-1][3]);
+            roundKeys[i][3] = roundKeys[i-4][3] ^ sbox_calc(roundKeys[i-1][0]);
+            
+            uint32_t shift = 0x00001 << ((i - 4)/4);
+            if(shift >= 0x100)
+                shift ^= (0x11b << (__builtin_ctz(shift)-8));
+
+            roundKeys[i][0] ^= shift;
         }
         else
         {
+            //w(i) = w(i-1) ^ w(i-4)
             for(int j = 0; j < 4; j++)
             {
                 roundKeys[i][j] = roundKeys[i-1][j] ^ roundKeys[i-4][j];
@@ -198,6 +225,7 @@ AES_Encrypt
 
     construct_state_matrix(plaintext, state_matrix);
 
+    AES_ExpandKeys();
     AES_AddRoundKey(state_matrix, roundKeys, 0);
 
     int i;

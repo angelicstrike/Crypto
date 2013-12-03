@@ -1,6 +1,6 @@
 CC=gcc
 AES=aes.c
-GCD=gcd.c
+GCD=binary_gcd.c
 EXE_AES=test_aes.c
 EXE_GCD=test_gcd.c
 CFLAGS=-Wall -Werror -pedantic -std=c99

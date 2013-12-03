@@ -21,11 +21,11 @@ gcd_byte_to_field
 /*
  * Only works in modulo 2
  */
-uint32_t
+uint8_t
 gcd_field_to_byte
 ( int32_t a[EQN_LEN] )
 {
-    uint32_t ret_val = 0x0;
+    uint8_t ret_val = 0x0;
     for(int i = 0; i < EQN_LEN; i++)
     {
         if( a[i] )
@@ -160,7 +160,7 @@ gcd_extended_polynomial
 {
     int counter = 0;
     int32_t shifts[EQN_LEN];
-    //int32_t mults[EQN_LEN];
+    int32_t mults[EQN_LEN];
     //Actual gcd calculation
     int larger = 0;
     while( !gcd_done(a) && !gcd_done(b) )
@@ -174,11 +174,18 @@ gcd_extended_polynomial
         else if(larger == 1) // a is larger
         {
             shifts[counter] = gcd_find_shift(a,b);
+            mults[counter] = gcd_find_mult(a,b);
+            shift_up(b, shifts[counter]);
             subtract_polynomials(a,b);
+            shift_down(b, shifts[counter]);
         }
         else if(larger == 2) // b is larger
         {
+            //same as if a was larger, but roles of a and b are reversed
+            shifts[counter] = gcd_find_shift(b,a);
+            shift_up(a, shifts[counter]);
             subtract_polynomials(b,a); 
+            shift_down(a, shifts[counter]);
         }
         else //Error
         {

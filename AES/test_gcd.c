@@ -5,22 +5,8 @@
 int 
 main()
 {
-    uint32_t a_byte = 0x010000101000011;
-    uint32_t b_byte = 0x010011;
-   
-    int32_t a[EQN_LEN];
-    int32_t b[EQN_LEN];
+    uint32_t x_inv = gcd_compute(0x13, 0x2142);
 
-    gcd_byte_to_field(a_byte, a);
-    gcd_byte_to_field(b_byte, b);
-
-    puts("a is:");
-    for(int i = 0; i < EQN_LEN; i++)
-        printf("%d\n", a[i]);
-
-    puts("b is:");
-    for(int i = 0; i < EQN_LEN; i++)
-        printf("%d\n", b[i]);
-
+    printf("inverse is %x\n", x_inv);
     return 0;
 }
