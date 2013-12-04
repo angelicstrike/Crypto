@@ -5,8 +5,12 @@
 int 
 main()
 {
-    uint32_t x_inv = gcd_compute(0x11, FIELD_BYTE);
-
-    printf("inverse is %x\n", x_inv);
+    for(uint32_t i = 0; i < 0xff; i++)
+    {
+        uint32_t x_inv = gcd_compute(i, FIELD_BYTE);
+        printf("%x ", x_inv);
+        if(i % 0x0F == 0)
+            puts("");
+    }
     return 0;
 }

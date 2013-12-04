@@ -15,6 +15,8 @@
 #define FIELD_BYTE 0x11B //0x100011011
 #define C_BYTE 0x63
 
+uint8_t sbox_matrix_multiply( uint8_t byte);
+uint8_t sbox_byte_inversion(uint8_t byte);
 uint32_t gcd_compute( uint32_t a, uint32_t b);
 //void gcd_find_inverse(int32_t inverse[EQN_LEN], int a[EQN_LEN], int b[EQN_LEN], int modulus);
 uint32_t gcd_extended_polynomial(int32_t a[EQN_LEN], int32_t  b[EQN_LEN], uint32_t modulus);

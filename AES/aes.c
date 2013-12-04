@@ -1,22 +1,4 @@
 #include "aes.h"
-
-/*
- *  From a byte, returns the in the "postion"
- *  offset from 0. (so the first bit is the 0th bit,
- *  and the last, most significant bit is the 7th bit)
- *
- *  The returned value is always in the least significant place.
- *  So if you ask for the 7th bit, the value at the 7th location 
- *  in the given byte will be returned in the 0th place in the
- *  return value.
- */
-uint8_t
-get_bit
-( uint8_t byte, uint8_t position )
-{
-    uint8_t ret_val = 0;
-    return ret_val;
-}
 static void
 print_matrix
 ( uint8_t a[TEXT_MATRIX_SIZE][TEXT_MATRIX_SIZE]  )
@@ -34,24 +16,23 @@ print_matrix
         printf("\n\n");
 
 }
-static uint8_t
-sbox_calc
+
+uint8_t
+sbox_byte_inversion
 ( uint8_t byte )
 {
     uint32_t inverse;
+    if(byte == 0)
+        return 0;
 
     inverse = gcd_compute(byte, FIELD_BYTE);
 
     return inverse;
 }
 
-/*
- * Makes call to GCD functions here to do conversion to field
- * equation from bits and back again.
- */
-bool 
-AES_Subbytes
-( uint8_t input[TEXT_MATRIX_SIZE][TEXT_MATRIX_SIZE] )
+uint8_t
+sbox_matrix_multiply
+( uint8_t byte )
 {
     uint8_t affine_matrix[8][8] =
     {
@@ -64,34 +45,52 @@ AES_Subbytes
         {0,0,1,1,1,1,1,0},
         {0,0,0,1,1,1,1,1}
     };
+    
+    uint8_t new_byte = 0x0;
+    uint8_t new_bit = 0x0;
+    uint8_t temp = 0x0;
+    
+    for(int row = 0; row < 8; row++)
+    {
+        for(int elem = 0; elem < 8; elem++)
+        {
+            temp = byte & (0x01 << elem);
+            temp >>= elem;
+            temp &= affine_matrix[row][elem];
+            new_bit ^= temp;
+        }
+        new_byte |= (new_bit << row);
+        new_bit = 0;
+        temp = 0;
+    }
+
+    return new_byte ^ 0x63;
+}
+
+/*
+ * Makes call to GCD functions here to do conversion to field
+ * equation from bits and back again.
+ */
+bool 
+AES_Subbytes
+( uint8_t input[TEXT_MATRIX_SIZE][TEXT_MATRIX_SIZE] )
+{
     for(int i = 0; i < TEXT_MATRIX_SIZE; i++)
     {
         for(int j = 0; j < TEXT_MATRIX_SIZE; j++)
         {
-           input[i][j] = sbox_calc(input[i][j]); 
+            input[i][j] = sbox_byte_inversion(input[i][j]); 
         }
     } 
 
-    //Column in the input matrix
-    for(int col = 0; col < TEXT_MATRIX_SIZE; col++)
+    for(int i = 0; i < TEXT_MATRIX_SIZE; i++)
     {
-        //for every element in the input matrix
-        for(int elem = 0; elem < TEXT_MATRIX_SIZE; elem++)
+        for(int j = 0; j < TEXT_MATRIX_SIZE; j++)
         {
-            //Row in the affine_matrix
-            uint8_t temp = 0;
-            for(int row = 0; row < 8; row++)
-            {
-                for(int aff_col = 7; aff_col > -1; aff_col--)
-                {
-                    temp ^= (affine_matrix[row][aff_col] & ( (input[col][elem] & (0x01 << aff_col)) >> aff_col) ) << (row);
-                }
-            }
-            temp ^= 0x63;
-            input[col][elem] = temp;
+            input[i][j] = sbox_matrix_multiply(input[i][j]);
         }
     }
-
+    
     return true;
 }
 
@@ -204,16 +203,20 @@ AES_ExpandKeys(uint8_t* mainKey, uint8_t roundKeys[NUM_KEYS][TEXT_MATRIX_SIZE])
         }
     }
 
+
     for(int i = 4; i <= 43; i++)
     {
         if(i % 4 == 0)
         {
-            roundKeys[i][0] = roundKeys[i-4][0] ^ sbox_calc(roundKeys[i-1][1]);
-            roundKeys[i][1] = roundKeys[i-4][1] ^ sbox_calc(roundKeys[i-1][2]);
-            roundKeys[i][2] = roundKeys[i-4][2] ^ sbox_calc(roundKeys[i-1][3]);
-            roundKeys[i][3] = roundKeys[i-4][3] ^ sbox_calc(roundKeys[i-1][0]);
+            roundKeys[i][0] = roundKeys[i-4][0] ^ sbox_matrix_multiply(sbox_byte_inversion(roundKeys[i-1][1]));
+            roundKeys[i][1] = roundKeys[i-4][1] ^ sbox_matrix_multiply(sbox_byte_inversion(roundKeys[i-1][2]));
+            roundKeys[i][2] = roundKeys[i-4][2] ^ sbox_matrix_multiply(sbox_byte_inversion(roundKeys[i-1][3]));
+            roundKeys[i][3] = roundKeys[i-4][3] ^ sbox_matrix_multiply(sbox_byte_inversion(roundKeys[i-1][0]));
             
-            uint32_t shift = 0x00001 << ((i - 4)/4);
+            //uint32_t shift = 0x00001 << ((i - 4)/4);
+            uint32_t shift = 0x0;
+            shift = 0x01 << ((i-4)/4);
+            //printf("%d, %x\n", i, shift);
             if(shift >= 0x100)
                 shift ^= (0x11b << (__builtin_ctz(shift)-8));
 
@@ -226,7 +229,8 @@ AES_ExpandKeys(uint8_t* mainKey, uint8_t roundKeys[NUM_KEYS][TEXT_MATRIX_SIZE])
             {
                 roundKeys[i][j] = roundKeys[i-1][j] ^ roundKeys[i-4][j];
             }
-        } 
+        }
+
     }    
 
     return true;
@@ -246,11 +250,6 @@ construct_state_matrix
     }
 }
 
-
-
-
-
-
 /*
  * Main, top level encryption algorithm. Implements
  * the AES logic as per FIPS Document 197.
@@ -264,26 +263,26 @@ AES_Encrypt
 
     construct_state_matrix(plaintext, state_matrix);
 
+    print_matrix(state_matrix);
     AES_ExpandKeys(key, roundKeys);
-        print_matrix(state_matrix);
     AES_AddRoundKey(state_matrix, roundKeys, 0);
+    print_matrix(state_matrix);
 
     int i;
-    for(i = 1; i < NUM_ROUNDS - 1; i++)
+    for(i = 1; i < NUM_ROUNDS; i++)
     {
         AES_Subbytes(state_matrix);
-        print_matrix(state_matrix);
         AES_ShiftRows(state_matrix);
-        print_matrix(state_matrix);
         AES_MixColumns(state_matrix);
-        print_matrix(state_matrix);
         AES_AddRoundKey(state_matrix, roundKeys, i);
+        print_matrix(state_matrix);
     }
     
     /* Last Round */
     AES_Subbytes(state_matrix);
     AES_ShiftRows(state_matrix);
-    AES_AddRoundKey(state_matrix, roundKeys, NUM_ROUNDS - 1);
+    AES_AddRoundKey(state_matrix, roundKeys, NUM_ROUNDS );
+    print_matrix(state_matrix);
 
     for(int i = 0; i < TEXT_MATRIX_SIZE; i++)
     {

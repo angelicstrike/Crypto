@@ -18,6 +18,37 @@ find_shift
     return a_lead - b_lead;
 }
 
+static int32_t
+degree
+( uint32_t num )
+{
+    uint32_t degree = 0;
+    while(num >>= 1)
+    {
+        degree++;
+    }
+
+    return degree;
+}
+
+static uint32_t
+barrel_multiply
+( uint32_t a, uint32_t b )
+{
+    uint32_t ans = 0;
+    int32_t shift = -1;
+    do {
+        shift++;
+
+        if(b & 0x01)
+        {
+            ans ^= (a << shift);
+        }
+
+    }while( b >>= 1 );
+
+    return ans;
+}
 
 /*
  *  Works mod 2 always
@@ -43,7 +74,7 @@ gcd_compute
 
     while( higher > 1 && lower > 1 )
     {
-        while( higher > lower  )
+        while( degree(higher) >= degree(lower)  )
         {
             shifts[counter] |= (0x01 << find_shift(lower, higher));
             higher ^= (lower << find_shift(lower, higher));
@@ -60,7 +91,7 @@ gcd_compute
     counter--;
     while(counter > -1)
     {
-        ans = cur * shifts[counter];
+        ans = barrel_multiply(cur, shifts[counter]);
         ans ^= prev;
 
         prev = cur;
