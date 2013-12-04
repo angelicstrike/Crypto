@@ -7,13 +7,13 @@ print_matrix
         {
             for(int j = 0; j < TEXT_MATRIX_SIZE; j++)
             {
-                printf("%x ", a[j][i]);
+                printf("%02x ", a[j][i]);
             }   
                                                         
-            printf("\n");
+            printf("\\\\\n");
         }
 
-        printf("\n\n");
+        printf("\\\\\\\\\n\n");
 
 }
 
@@ -90,6 +90,10 @@ AES_Subbytes
             input[i][j] = sbox_matrix_multiply(input[i][j]);
         }
     }
+    puts("Post subbytes\\\\");
+    print_matrix(input);
+
+
     
     return true;
 }
@@ -117,6 +121,9 @@ AES_ShiftRows
             input[3][row] = temp;
         }
     }
+    puts("Post shift rows\\\\");
+    print_matrix(input);
+
     return true;
 }
 
@@ -173,6 +180,9 @@ AES_MixColumns
         }
     }
 
+    puts("Post Mix Columns:\\\\");
+    print_matrix(input);
+
     return true;
 }
 
@@ -188,6 +198,8 @@ AES_AddRoundKey
             input[i][j] ^= keys[4*round + i][j];
         }
     }
+    puts("After addition of round key\\\\");
+    print_matrix(input);
 
     return true;
 }
@@ -195,12 +207,14 @@ AES_AddRoundKey
 bool
 AES_ExpandKeys(uint8_t* mainKey, uint8_t roundKeys[NUM_KEYS][TEXT_MATRIX_SIZE])
 {
+    puts("Generating Round Key for Round 0\\\\");
     for(int i = 0; i < TEXT_MATRIX_SIZE; i++)
     {
         for(int j = 0; j < TEXT_MATRIX_SIZE; j++)
         {
             roundKeys[i][j] = mainKey[4*i + j];
         }
+        printf("Made round key word of %02x, %02x, %02x, %02x\\\\\n", roundKeys[i][0], roundKeys[i][1], roundKeys[i][2], roundKeys[i][3]);
     }
 
 
@@ -208,15 +222,14 @@ AES_ExpandKeys(uint8_t* mainKey, uint8_t roundKeys[NUM_KEYS][TEXT_MATRIX_SIZE])
     {
         if(i % 4 == 0)
         {
+            printf("\nGenerating Round Keys for Round %d\\\\\n", i/4);
             roundKeys[i][0] = roundKeys[i-4][0] ^ sbox_matrix_multiply(sbox_byte_inversion(roundKeys[i-1][1]));
             roundKeys[i][1] = roundKeys[i-4][1] ^ sbox_matrix_multiply(sbox_byte_inversion(roundKeys[i-1][2]));
             roundKeys[i][2] = roundKeys[i-4][2] ^ sbox_matrix_multiply(sbox_byte_inversion(roundKeys[i-1][3]));
             roundKeys[i][3] = roundKeys[i-4][3] ^ sbox_matrix_multiply(sbox_byte_inversion(roundKeys[i-1][0]));
             
-            //uint32_t shift = 0x00001 << ((i - 4)/4);
             uint32_t shift = 0x0;
             shift = 0x01 << ((i-4)/4);
-            //printf("%d, %x\n", i, shift);
             if(shift >= 0x100)
                 shift ^= (0x11b << (__builtin_ctz(shift)-8));
 
@@ -224,15 +237,16 @@ AES_ExpandKeys(uint8_t* mainKey, uint8_t roundKeys[NUM_KEYS][TEXT_MATRIX_SIZE])
         }
         else
         {
-            //w(i) = w(i-1) ^ w(i-4)
             for(int j = 0; j < 4; j++)
             {
                 roundKeys[i][j] = roundKeys[i-1][j] ^ roundKeys[i-4][j];
             }
         }
-
+        
+        printf("Made round key word of %02x, %02x, %02x, %02x\\\\\n", roundKeys[i][0], roundKeys[i][1], roundKeys[i][2], roundKeys[i][3]);
     }    
 
+    puts("Finished generating round keys\\\\");
     return true;
 }
 
@@ -263,26 +277,28 @@ AES_Encrypt
 
     construct_state_matrix(plaintext, state_matrix);
 
-    print_matrix(state_matrix);
     AES_ExpandKeys(key, roundKeys);
     AES_AddRoundKey(state_matrix, roundKeys, 0);
-    print_matrix(state_matrix);
 
     int i;
     for(i = 1; i < NUM_ROUNDS; i++)
     {
+        printf("ROUND %d\\\\\n", i);
+        puts("Rounds starts with:\\\\");
+        print_matrix(state_matrix);
         AES_Subbytes(state_matrix);
         AES_ShiftRows(state_matrix);
         AES_MixColumns(state_matrix);
         AES_AddRoundKey(state_matrix, roundKeys, i);
-        print_matrix(state_matrix);
     }
     
     /* Last Round */
+    printf("ROUND %d\\\\\n", NUM_ROUNDS);
+    puts("Rounds starts with:\\\\");
+    print_matrix(state_matrix);
     AES_Subbytes(state_matrix);
     AES_ShiftRows(state_matrix);
     AES_AddRoundKey(state_matrix, roundKeys, NUM_ROUNDS );
-    print_matrix(state_matrix);
 
     for(int i = 0; i < TEXT_MATRIX_SIZE; i++)
     {

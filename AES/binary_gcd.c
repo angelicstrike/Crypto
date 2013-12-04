@@ -72,6 +72,7 @@ gcd_compute
         lower = a;
     }
 
+    printf("Finding gcd of %x and %x\\\\\n", higher, lower);
     while( higher > 1 && lower > 1 )
     {
         while( degree(higher) >= degree(lower)  )
@@ -79,6 +80,7 @@ gcd_compute
             shifts[counter] |= (0x01 << find_shift(lower, higher));
             higher ^= (lower << find_shift(lower, higher));
         }
+        printf("Generated quotient of %x\\\\\n", shifts[counter]);
         counter++;
         uint32_t temp = higher;
         higher = lower;
@@ -96,9 +98,29 @@ gcd_compute
 
         prev = cur;
         cur = ans;
+        printf("Generated temporary value of %x\\\\\n", cur);
         ans = 0;
         counter--;
     }
+    if(higher == 0) //gcd higher than 1
+        ans = lower;
+    else if(lower == 0) //still gcd higher than 1
+        ans = higher;
+    else//mutually prime
+        ans = 1;
 
+
+    if(a >= b)
+    {
+        higher = a;
+        lower = b;
+    }
+    else
+    {
+        higher = b;
+        lower = a;
+    }
+
+    printf("So our gcd equation is (%x)(%x) + (%x)(%x) = %x mod 2\\\\\n", lower, cur, higher, prev, ans);
     return cur;
 }

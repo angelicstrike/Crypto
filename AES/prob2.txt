@@ -1,0 +1,69 @@
+Expanding Key of:
+2b 7e 15 16 28 ae d2 a6 ab f7 15 88 09 cf 4f 3c \\
+
+Generating Round Key for Round 0\\
+Made round key word of 2b, 7e, 15, 16\\
+Made round key word of 28, ae, d2, a6\\
+Made round key word of ab, f7, 15, 88\\
+Made round key word of 09, cf, 4f, 3c\\
+
+Generating Round Keys for Round 1\\
+Made round key word of a0, fa, fe, 17\\
+Made round key word of 88, 54, 2c, b1\\
+Made round key word of 23, a3, 39, 39\\
+Made round key word of 2a, 6c, 76, 05\\
+
+Generating Round Keys for Round 2\\
+Made round key word of f2, c2, 95, f2\\
+Made round key word of 7a, 96, b9, 43\\
+Made round key word of 59, 35, 80, 7a\\
+Made round key word of 73, 59, f6, 7f\\
+
+Generating Round Keys for Round 3\\
+Made round key word of 3d, 80, 47, 7d\\
+Made round key word of 47, 16, fe, 3e\\
+Made round key word of 1e, 23, 7e, 44\\
+Made round key word of 6d, 7a, 88, 3b\\
+
+Generating Round Keys for Round 4\\
+Made round key word of ef, 44, a5, 41\\
+Made round key word of a8, 52, 5b, 7f\\
+Made round key word of b6, 71, 25, 3b\\
+Made round key word of db, 0b, ad, 00\\
+
+Generating Round Keys for Round 5\\
+Made round key word of d4, d1, c6, f8\\
+Made round key word of 7c, 83, 9d, 87\\
+Made round key word of ca, f2, b8, bc\\
+Made round key word of 11, f9, 15, bc\\
+
+Generating Round Keys for Round 6\\
+Made round key word of 6d, 88, a3, 7a\\
+Made round key word of 11, 0b, 3e, fd\\
+Made round key word of db, f9, 86, 41\\
+Made round key word of ca, 00, 93, fd\\
+
+Generating Round Keys for Round 7\\
+Made round key word of 4e, 54, f7, 0e\\
+Made round key word of 5f, 5f, c9, f3\\
+Made round key word of 84, a6, 4f, b2\\
+Made round key word of 4e, a6, dc, 4f\\
+
+Generating Round Keys for Round 8\\
+Made round key word of ea, d2, 73, 21\\
+Made round key word of b5, 8d, ba, d2\\
+Made round key word of 31, 2b, f5, 60\\
+Made round key word of 7f, 8d, 29, 2f\\
+
+Generating Round Keys for Round 9\\
+Made round key word of ac, 77, 66, f3\\
+Made round key word of 19, fa, dc, 21\\
+Made round key word of 28, d1, 29, 41\\
+Made round key word of 57, 5c, 00, 6e\\
+
+Generating Round Keys for Round 10\\
+Made round key word of d0, 14, f9, a8\\
+Made round key word of c9, ee, 25, 89\\
+Made round key word of e1, 3f, 0c, c8\\
+Made round key word of b6, 63, 0c, a6\\
+Finished generating round keys\\
