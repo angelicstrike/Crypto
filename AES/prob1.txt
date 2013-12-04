@@ -1,0 +1,6 @@
+Finding gcd of 2143 and 13\\
+Generated quotient of 27c\\
+Generated quotient of 6\\
+Generated temporary value of 6\\
+Generated temporary value of d09\\
+So our gcd equation is (13)(d09) + (2143)(6) =  1 mod 2\\
